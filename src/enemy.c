@@ -1,6 +1,7 @@
 #include "enemy.h"
 #include "game.h"  // For shared variables like wallGrid
 #include <math.h>
+#include "config.h"
 
 // Define the enemies array
 Enemy enemies[MAX_ENEMIES];
@@ -23,8 +24,8 @@ void SpawnEnemy(Vector2 position, int type) {
             // Set properties based on type
             switch (type) {
                 case 0:  // Basic enemy
-                    enemies[i].speed = 0.2f;
-                    enemies[i].health = 3;
+                    enemies[i].speed = ENEMY_BASIC_SPEED;
+                    enemies[i].health = ENEMY_BASIC_HEALTH;
                     enemies[i].color = RED;
                     break;
                 case 1:  // Fast enemy

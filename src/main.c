@@ -5,13 +5,7 @@
 #include "game.h"
 #include "enemy.h"
 #include "player.h"
-
-#define GRID_WIDTH 16
-#define GRID_HEIGHT 12
-#define TILE_SIZE 50
-#define MANA_COST_FIREBALL 10
-#define MANA_COST_LIGHTNING 20
-#define MANA_COST_ICE 15
+#include "config.h"
 
 Vector2 mostRecentDirection = {1, 0};  // Default to right
 
