@@ -3,6 +3,7 @@
 #include "projectile.h"
 #include <stdio.h>
 #include "game.h"
+#include "enemy.h"
 
 #define GRID_WIDTH 16
 #define GRID_HEIGHT 12
@@ -14,11 +15,11 @@ Vector2 mostRecentDirection = {1, 0};  // Default to right
 int wallGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
@@ -72,11 +73,14 @@ int main() {
     }
 
     // Initialize projectiles
+    InitializeEnemies();
     InitializeProjectiles();
+    
 
     // Player position and size
     Vector2 playerPosition = {100, 100};
     float playerSpeed = 5.0f;
+    SpawnEnemy((Vector2){150, 150}, 0);  // Basic enemy
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -113,6 +117,7 @@ int main() {
 
         // Update projectiles
         UpdateProjectiles();
+        UpdateEnemies(playerPosition);
 
         // Handle shooting
         if (IsKeyPressed(KEY_SPACE)) {
@@ -141,6 +146,7 @@ int main() {
 
             // Draw projectiles
             DrawProjectiles();
+            DrawEnemies();
         EndDrawing();
     }
 

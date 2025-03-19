@@ -2,7 +2,7 @@
 CC = gcc
 
 # Source files
-SRC = src/main.c src/projectile.c
+SRC = src/main.c src/projectile.c src/enemy.c
 
 # Output executable
 TARGET = game
