@@ -1,5 +1,5 @@
 #include "projectile.h"
-
+#include "game.h"
 Projectile projectiles[MAX_PROJECTILES];
 
 void InitializeProjectiles() {
@@ -44,9 +44,16 @@ void ShootProjectile(Vector2 position, Vector2 direction, int type) {
 void UpdateProjectiles() {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (projectiles[i].active) {
+            // Move the projectile
             projectiles[i].position.x += projectiles[i].direction.x * projectiles[i].speed;
             projectiles[i].position.y += projectiles[i].direction.y * projectiles[i].speed;
 
+            // Check for collisions with walls
+            if (CheckCollision(wallGrid, projectiles[i].position, TILE_SIZE, 10, 10)) {  // 10x10 is the projectile size
+                projectiles[i].active = false;  // Deactivate the projectile
+            }
+
+            // Deactivate if off-screen
             if (projectiles[i].position.x < 0 || projectiles[i].position.x > GetScreenWidth() ||
                 projectiles[i].position.y < 0 || projectiles[i].position.y > GetScreenHeight()) {
                 projectiles[i].active = false;

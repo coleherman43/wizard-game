@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include "projectile.h"
 #include <stdio.h>
+#include "game.h"
 
 #define GRID_WIDTH 16
 #define GRID_HEIGHT 12
