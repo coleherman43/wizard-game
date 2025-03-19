@@ -1,5 +1,6 @@
 #include "projectile.h"
 #include "game.h"
+#include "enemy.h"
 Projectile projectiles[MAX_PROJECTILES];
 
 void InitializeProjectiles() {
@@ -51,6 +52,15 @@ void UpdateProjectiles() {
             // Check for collisions with walls
             if (CheckCollision(wallGrid, projectiles[i].position, TILE_SIZE, 10, 10)) {  // 10x10 is the projectile size
                 projectiles[i].active = false;  // Deactivate the projectile
+            }
+            
+            // Check for collision with enemis
+            for (int j = 0; j < MAX_ENEMIES; j++) {
+                if (enemies[j].active && CheckEnemyCollision(enemies[j], projectiles[i].position, 10, 10)) {
+                    enemies[j].health--;  // Reduce enemy health
+                    projectiles[i].active = false;  // Deactivate projectile
+                    break;
+                }
             }
 
             // Deactivate if off-screen

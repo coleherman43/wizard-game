@@ -1,3 +1,6 @@
 .vscode
 game
 .DS_Store
+enemy.o
+main.o
+projectile.o
