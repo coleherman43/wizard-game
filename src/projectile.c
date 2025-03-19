@@ -11,27 +11,32 @@ void InitializeProjectiles() {
 void ShootProjectile(Vector2 position, Vector2 direction, int type) {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (!projectiles[i].active) {
+            // Initialize the projectile
             projectiles[i].position = position;
             projectiles[i].direction = direction;
-            projectiles[i].speed = 10.0f;
             projectiles[i].active = true;
             projectiles[i].type = type;
 
+            // Set properties based on the type
             switch (type) {
                 case 0:  // Fireball
+                    projectiles[i].speed = 10.0f;
                     projectiles[i].color = RED;
                     break;
                 case 1:  // Lightning
+                    projectiles[i].speed = 15.0f;  // Faster than fireball
                     projectiles[i].color = YELLOW;
                     break;
                 case 2:  // Ice
+                    projectiles[i].speed = 7.0f;   // Slower than fireball
                     projectiles[i].color = BLUE;
                     break;
                 default:
+                    projectiles[i].speed = 10.0f;
                     projectiles[i].color = WHITE;
                     break;
             }
-            break;
+            break;  // Exit after activating one projectile
         }
     }
 }
@@ -53,7 +58,20 @@ void UpdateProjectiles() {
 void DrawProjectiles() {
     for (int i = 0; i < MAX_PROJECTILES; i++) {
         if (projectiles[i].active) {
-            DrawCircleV(projectiles[i].position, 10, projectiles[i].color);
+            switch (projectiles[i].type) {
+                case 0:  // Fireball
+                    DrawCircleV(projectiles[i].position, 10, projectiles[i].color);
+                    break;
+                case 1:  // Lightning
+                    DrawRectangleV(projectiles[i].position, (Vector2){20, 5}, projectiles[i].color);  // Rectangular lightning bolt
+                    break;
+                case 2:  // Ice
+                    DrawCircleV(projectiles[i].position, 8, projectiles[i].color);  // Smaller ice projectile
+                    break;
+                default:
+                    DrawCircleV(projectiles[i].position, 10, WHITE);  // Default projectile
+                    break;
+            }
         }
     }
 }

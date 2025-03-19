@@ -7,6 +7,8 @@
 #define GRID_HEIGHT 12
 #define TILE_SIZE 50
 
+Vector2 mostRecentDirection = {1, 0};  // Default to right
+
 // Wall grid (1 = wall, 0 = empty)
 int wallGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -80,10 +82,28 @@ int main() {
         // Update logic
         Vector2 newPosition = playerPosition;
 
-        if (IsKeyDown(KEY_RIGHT)) newPosition.x += playerSpeed;
-        if (IsKeyDown(KEY_LEFT)) newPosition.x -= playerSpeed;
-        if (IsKeyDown(KEY_DOWN)) newPosition.y += playerSpeed;
-        if (IsKeyDown(KEY_UP)) newPosition.y -= playerSpeed;
+        Vector2 direction = {0, 0};  // Combined direction vector
+
+        if (IsKeyDown(KEY_RIGHT)) direction.x += 1;
+        if (IsKeyDown(KEY_LEFT)) direction.x -= 1;
+        if (IsKeyDown(KEY_DOWN)) direction.y += 1;
+        if (IsKeyDown(KEY_UP)) direction.y -= 1;
+
+        // Normalize the combined direction vector
+        float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length > 0) {
+            direction.x /= length;
+            direction.y /= length;
+        }
+
+        // Update the player's position
+        newPosition.x += direction.x * playerSpeed;
+        newPosition.y += direction.y * playerSpeed;
+
+        // Update the most recent direction
+        if (direction.x != 0 || direction.y != 0) {
+            mostRecentDirection = direction;
+        }
 
         // Check for collisions before updating the player's position
         if (!CheckCollision(wallGrid, newPosition, TILE_SIZE, TILE_SIZE, TILE_SIZE)) {
@@ -95,55 +115,16 @@ int main() {
 
         // Handle shooting
         if (IsKeyPressed(KEY_SPACE)) {
-            Vector2 direction = {0, 0};
-
-            if (IsKeyDown(KEY_RIGHT)) direction.x = 1;
-            if (IsKeyDown(KEY_LEFT)) direction.x = -1;
-            if (IsKeyDown(KEY_DOWN)) direction.y = 1;
-            if (IsKeyDown(KEY_UP)) direction.y = -1;
-
-            // Normalize direction
-            float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-            if (length > 0) {
-                direction.x /= length;
-                direction.y /= length;
-            }
-
-            ShootProjectile(playerPosition, direction, 0);  // Fireball
+            // Fireball
+            ShootProjectile(playerPosition, mostRecentDirection, 0);
         }
         if (IsKeyPressed(KEY_L)) {
-            Vector2 direction = {0, 0};
-
-            if (IsKeyDown(KEY_RIGHT)) direction.x = 1;
-            if (IsKeyDown(KEY_LEFT)) direction.x = -1;
-            if (IsKeyDown(KEY_DOWN)) direction.y = 1;
-            if (IsKeyDown(KEY_UP)) direction.y = -1;
-
-            // Normalize direction
-            float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-            if (length > 0) {
-                direction.x /= length;
-                direction.y /= length;
-            }
-
-            ShootProjectile(playerPosition, direction, 1);  // Lightning
+            // Lightning
+            ShootProjectile(playerPosition, mostRecentDirection, 1);
         }
         if (IsKeyPressed(KEY_I)) {
-            Vector2 direction = {0, 0};
-
-            if (IsKeyDown(KEY_RIGHT)) direction.x = 1;
-            if (IsKeyDown(KEY_LEFT)) direction.x = -1;
-            if (IsKeyDown(KEY_DOWN)) direction.y = 1;
-            if (IsKeyDown(KEY_UP)) direction.y = -1;
-
-            // Normalize direction
-            float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-            if (length > 0) {
-                direction.x /= length;
-                direction.y /= length;
-            }
-
-            ShootProjectile(playerPosition, direction, 2);  // Ice
+            // Ice
+            ShootProjectile(playerPosition, mostRecentDirection, 2);
         }
 
         // Draw here
