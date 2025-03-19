@@ -9,6 +9,9 @@
 #define GRID_WIDTH 16
 #define GRID_HEIGHT 12
 #define TILE_SIZE 50
+#define MANA_COST_FIREBALL 10
+#define MANA_COST_LIGHTNING 20
+#define MANA_COST_ICE 15
 
 Vector2 mostRecentDirection = {1, 0};  // Default to right
 int playerHealth = 100;  // Player starts with 100 health
@@ -148,17 +151,34 @@ int main() {
         UpdateEnemies(playerPosition);
 
         // Handle shooting
-        if (IsKeyPressed(KEY_SPACE)) {
-            // Fireball
-            ShootProjectile(playerPosition, mostRecentDirection, 0);
+        if (IsKeyPressed(KEY_SPACE)) {  // Fireball
+            if (player.mana >= MANA_COST_FIREBALL) {
+                ShootProjectile(playerPosition, mostRecentDirection, 0);  // Fireball
+                player.mana -= MANA_COST_FIREBALL;
+                printf("Casted Fireball! Mana: %d\n", player.mana);  // Debug output
+            } else {
+                printf("Not enough mana to cast Fireball!\n");  // Debug output
+            }
         }
-        if (IsKeyPressed(KEY_L)) {
-            // Lightning
-            ShootProjectile(playerPosition, mostRecentDirection, 1);
+        
+        if (IsKeyPressed(KEY_L)) {  // Lightning
+            if (player.mana >= MANA_COST_LIGHTNING) {
+                ShootProjectile(playerPosition, mostRecentDirection, 1);  // Lightning
+                player.mana -= MANA_COST_LIGHTNING;
+                printf("Casted Lightning! Mana: %d\n", player.mana);  // Debug output
+            } else {
+                printf("Not enough mana to cast Lightning!\n");  // Debug output
+            }
         }
-        if (IsKeyPressed(KEY_I)) {
-            // Ice
-            ShootProjectile(playerPosition, mostRecentDirection, 2);
+        
+        if (IsKeyPressed(KEY_I)) {  // Ice
+            if (player.mana >= MANA_COST_ICE) {
+                ShootProjectile(playerPosition, mostRecentDirection, 2);  // Ice
+                player.mana -= MANA_COST_ICE;
+                printf("Casted Ice! Mana: %d\n", player.mana);  // Debug output
+            } else {
+                printf("Not enough mana to cast Ice!\n");  // Debug output
+            }
         }
 
         // Draw here

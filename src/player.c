@@ -58,3 +58,11 @@ void GainXP(Player *player, int xp) {
         player->mana = player->maxMana;  // Restore mana to full
     }
 }
+
+void DeductMana(Player *player, int amount) {
+    player->mana -= amount;
+    if (player->mana < 0) {
+        player->mana = 0;  // Ensure mana doesn't go below 0
+    }
+    printf("Deducted %d mana. Current mana: %d\n", amount, player->mana);  // Debug output
+}
