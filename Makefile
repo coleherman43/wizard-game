@@ -2,17 +2,21 @@
 CC = gcc
 
 # Source files
-SRC = src/main.c
+SRC = src/main.c src/projectile.c
 
 # Output executable
 TARGET = game
 
 # Compiler flags
-CFLAGS = -Wall -std=c99 -O2 -I/opt/homebrew/Cellar/raylib/5.5/include
-LDFLAGS = -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib -framework OpenGL -framework Cocoa -framework IOKit
+CFLAGS = -Wall -std=c99 -O2 -I/opt/homebrew/Cellar/raylib/5.5/include -I./src
+LDFLAGS = -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib -framework OpenGL -framework Cocoa -framework IOKit -lm
 
-all:
+# Build target
+all: $(TARGET)
+
+$(TARGET): $(SRC)
 	$(CC) $(SRC) -o $(TARGET) $(CFLAGS) $(LDFLAGS)
 
+# Clean target
 clean:
 	rm -f $(TARGET)

@@ -1,19 +1,23 @@
+#include <math.h>
 #include "raylib.h"
+#include "projectile.h"
 #include <stdio.h>
+#include "game.h"
 
-// Wall grid dimensions
 #define GRID_WIDTH 16
 #define GRID_HEIGHT 12
 #define TILE_SIZE 50
+
+Vector2 mostRecentDirection = {1, 0};  // Default to right
 
 // Wall grid (1 = wall, 0 = empty)
 int wallGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1},
+    {1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1},
+    {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
@@ -31,12 +35,6 @@ void DrawWalls(int wallGrid[GRID_HEIGHT][GRID_WIDTH], int tileSize) {
             }
         }
     }
-    // FOR DEBUGGING: show rectangles
-    // for (int y = 0; y < GRID_HEIGHT; y++) {
-    //     for (int x = 0; x < GRID_WIDTH; x++) {
-    //         DrawText(TextFormat("%d", wallGrid[y][x]), x * TILE_SIZE + 10, y * TILE_SIZE + 10, 20, BLACK);
-    //     }
-    // }
 }
 
 // Check for collisions
@@ -60,24 +58,24 @@ bool CheckCollision(int wallGrid[GRID_HEIGHT][GRID_WIDTH], Vector2 position, int
 
 int main() {
     // Initialize the window
-    InitWindow(GRID_WIDTH * TILE_SIZE, GRID_HEIGHT * TILE_SIZE, "Wizard Game");
+    InitWindow(800, 600, "Wizard Game");
 
     // Set the target frames per second
     SetTargetFPS(60);
 
     // Load the player texture
-    Texture2D playerTexture = LoadTexture("assets/player.png");
+    Texture2D playerTexture = LoadTexture("assets/player.png");  // Replace with your texture path
     if (playerTexture.id == 0) {
-        printf("Failed to load texture. Check the file path.\n");
+        printf("Failed to load player texture. Check the file path.\n");
         CloseWindow();
         return 1;
     }
 
-    // Calculate the scale to fit the player within a 50x50 grid square
-    float scale = (float)TILE_SIZE / playerTexture.width;
+    // Initialize projectiles
+    InitializeProjectiles();
 
     // Player position and size
-    Vector2 playerPosition = {50, 50};  // Updated starting position
+    Vector2 playerPosition = {100, 100};
     float playerSpeed = 5.0f;
 
     // Main game loop
@@ -85,25 +83,64 @@ int main() {
         // Update logic
         Vector2 newPosition = playerPosition;
 
-        if (IsKeyDown(KEY_RIGHT)) newPosition.x += playerSpeed;
-        if (IsKeyDown(KEY_LEFT)) newPosition.x -= playerSpeed;
-        if (IsKeyDown(KEY_DOWN)) newPosition.y += playerSpeed;
-        if (IsKeyDown(KEY_UP)) newPosition.y -= playerSpeed;
+        Vector2 direction = {0, 0};  // Combined direction vector
 
-        // Check for collisions
+        if (IsKeyDown(KEY_RIGHT)) direction.x += 1;
+        if (IsKeyDown(KEY_LEFT)) direction.x -= 1;
+        if (IsKeyDown(KEY_DOWN)) direction.y += 1;
+        if (IsKeyDown(KEY_UP)) direction.y -= 1;
+
+        // Normalize the combined direction vector
+        float length = sqrt(direction.x * direction.x + direction.y * direction.y);
+        if (length > 0) {
+            direction.x /= length;
+            direction.y /= length;
+        }
+
+        // Update the player's position
+        newPosition.x += direction.x * playerSpeed;
+        newPosition.y += direction.y * playerSpeed;
+
+        // Update the most recent direction
+        if (direction.x != 0 || direction.y != 0) {
+            mostRecentDirection = direction;
+        }
+
+        // Check for collisions before updating the player's position
         if (!CheckCollision(wallGrid, newPosition, TILE_SIZE, TILE_SIZE, TILE_SIZE)) {
             playerPosition = newPosition;
         }
 
+        // Update projectiles
+        UpdateProjectiles();
+
+        // Handle shooting
+        if (IsKeyPressed(KEY_SPACE)) {
+            // Fireball
+            ShootProjectile(playerPosition, mostRecentDirection, 0);
+        }
+        if (IsKeyPressed(KEY_L)) {
+            // Lightning
+            ShootProjectile(playerPosition, mostRecentDirection, 1);
+        }
+        if (IsKeyPressed(KEY_I)) {
+            // Ice
+            ShootProjectile(playerPosition, mostRecentDirection, 2);
+        }
+
         // Draw here
         BeginDrawing();
-            ClearBackground(RAYWHITE);  // Clear the background to white
+            ClearBackground(RAYWHITE);
 
             // Draw walls
             DrawWalls(wallGrid, TILE_SIZE);
 
-            // Draw the player texture (scaled)
+            // Draw player texture
+            float scale = (float)TILE_SIZE / playerTexture.width;  // Scale to fit grid
             DrawTextureEx(playerTexture, playerPosition, 0.0f, scale, WHITE);
+
+            // Draw projectiles
+            DrawProjectiles();
         EndDrawing();
     }
 
