@@ -20,5 +20,6 @@ void InitializePlayer(Player *player);
 void DrawPlayerBars(Player player);
 void TakeDamage(Player *player, int damage);
 void GainXP(Player *player, int xp);
+void CheckLevelUp(Player *player);
 
 #endif

@@ -30,8 +30,12 @@ void DrawPlayerBars(Player player) {
     DrawRectangle(padding, padding + barHeight + padding, (int)(barWidth * ((float)player.mana / player.maxMana)), barHeight, SKYBLUE);
     DrawText("Mana", padding, padding + barHeight + padding - 20, 20, BLACK);
 
-    // Draw score, level, and XP
-    DrawText(TextFormat("Score: %d", player.score), padding, padding + 2 * (barHeight + padding), 20, BLACK);
+    // Draw level progress bar
+    DrawRectangle(padding, padding + 2 * (barHeight + padding), barWidth, barHeight, GRAY);  // Background
+    DrawRectangle(padding, padding + 2 * (barHeight + padding), (int)(barWidth * ((float)player.xp / player.xpToNextLevel)), barHeight, PURPLE);  // Progress
+    DrawText("Level Progress", padding, padding + 2 * (barHeight + padding) - 20, 20, BLACK);
+
+    // Draw level and XP text
     DrawText(TextFormat("Level: %d", player.level), padding, padding + 3 * (barHeight + padding), 20, BLACK);
     DrawText(TextFormat("XP: %d/%d", player.xp, player.xpToNextLevel), padding, padding + 4 * (barHeight + padding), 20, BLACK);
 }
@@ -65,4 +69,20 @@ void DeductMana(Player *player, int amount) {
         player->mana = 0;  // Ensure mana doesn't go below 0
     }
     printf("Deducted %d mana. Current mana: %d\n", amount, player->mana);  // Debug output
+}
+
+void CheckLevelUp(Player *player) {
+    while (player->xp >= player->xpToNextLevel) {
+        player->level++;  // Increase level
+        player->xp -= player->xpToNextLevel;  // Deduct XP for the next level
+        player->xpToNextLevel = (int)(player->xpToNextLevel * 1.5);  // Increase XP required for the next level
+
+        // Apply level-up bonuses
+        player->maxHealth += 20;  // Increase max health
+        player->health = player->maxHealth;  // Heal player to full
+        player->maxMana += 10;  // Increase max mana
+        player->mana = player->maxMana;  // Restore mana to full
+
+        printf("Level up! You are now level %d\n", player->level);  // Debug output
+    }
 }

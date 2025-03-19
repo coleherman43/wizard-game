@@ -95,8 +95,7 @@ void DrawEnemies() {
 
 // Check collision between an enemy and a rectangle
 bool CheckEnemyCollision(Enemy enemy, Vector2 position, int width, int height) {
-    return CheckCollisionRecs(
-        (Rectangle){enemy.position.x, enemy.position.y, TILE_SIZE, TILE_SIZE},
-        (Rectangle){position.x, position.y, width, height}
-    );
+    Rectangle enemyRect = {enemy.position.x, enemy.position.y, TILE_SIZE, TILE_SIZE};
+    Rectangle projectileRect = {position.x, position.y, (float)width, (float)height};
+    return CheckCollisionRecs(enemyRect, projectileRect);
 }
