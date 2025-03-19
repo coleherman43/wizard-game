@@ -2,11 +2,7 @@
 #define GAME_H
 
 #include "raylib.h"
-
-// Constants
-#define GRID_WIDTH 16
-#define GRID_HEIGHT 12
-#define TILE_SIZE 50
+#include "config.h"
 
 // Shared variables
 extern Vector2 mostRecentDirection;

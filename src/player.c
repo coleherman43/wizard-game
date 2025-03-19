@@ -1,17 +1,18 @@
 #include "player.h"
 #include <stdio.h>
+#include "config.h"
 
 // Initialize player with default values
 void InitializePlayer(Player *player) {
     player->position = (Vector2){100, 100};  // Default position
-    player->health = 100;
-    player->maxHealth = 100;
-    player->mana = 100;
-    player->maxMana = 100;
-    player->score = 0;
-    player->level = 1;
-    player->xp = 0;
-    player->xpToNextLevel = 100;  // XP required to level up
+    player->health = PLAYER_DEFAULT_MAX_HEALTH;
+    player->maxHealth = PLAYER_DEFAULT_MAX_HEALTH;
+    player->mana = PLAYER_DEFAULT_MAX_MANA;
+    player->maxMana = PLAYER_DEFAULT_MAX_MANA;
+    player->level = PLAYER_DEFAULT_START_LEVEL;
+    player->xp = PLAYER_DEFAULT_START_XP;
+    player->xpToNextLevel = PLAYER_DEFAULT_XP_TO_NEXT_LEVEL;  // XP required to level up
+    player->speed = PLAYER_DEFAULT_SPEED;
 }
 
 // Draw health and mana bars

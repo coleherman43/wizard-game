@@ -9,10 +9,10 @@ typedef struct {
     int maxHealth;
     int mana;
     int maxMana;
-    int score;
     int level;
     int xp;
     int xpToNextLevel;
+    float speed;
 } Player;
 
 // Function declarations

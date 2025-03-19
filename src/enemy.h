@@ -2,8 +2,7 @@
 #define ENEMY_H
 
 #include "raylib.h"
-
-#define MAX_ENEMIES 100
+#include "config.h"
 
 typedef struct {
     Vector2 position;
