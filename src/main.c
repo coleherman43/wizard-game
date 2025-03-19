@@ -164,35 +164,6 @@ void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
     UpdateEnemies(playerPosition);
 }
 
-// void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
-//     for (int i = 0; i < MAX_ENEMIES; i++) {
-//         if (enemies[i].active) {
-//             bool collision = CheckEnemyCollision(enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
-//             if (collision) {
-//                 TakeDamage(player, 10);
-//                 enemies[i].active = false;
-//             }
-
-//             // Check if enemy is defeated by a projectile
-//             for (int j = 0; j < MAX_PROJECTILES; j++) {
-//                 if (projectiles[j].active) {
-//                     bool collision = CheckEnemyCollision(enemies[i], projectiles[j].position, 10, 10);
-//                     printf("Enemy %d: active=%d, Projectile %d: active=%d, collision=%d\n",
-//                            i, enemies[i].active, j, projectiles[j].active, collision);  // Debug output
-//                     if (collision) {
-//                         enemies[i].active = false;
-//                         projectiles[j].active = false;
-//                         player->xp += 10;  // Award XP
-//                         printf("Enemy %d defeated! Gained 10 XP. Current XP: %d/%d\n", i, player->xp, player->xpToNextLevel);  // Debug output
-//                         break;  // Exit the loop after handling the collision
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//     UpdateEnemies(playerPosition);
-// }
-
 // Update projectiles and handle shooting
 void UpdateProjectilesAndHandleShooting(Vector2 playerPosition, Player *player) {
     UpdateProjectiles();

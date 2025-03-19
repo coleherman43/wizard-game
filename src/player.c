@@ -30,9 +30,14 @@ void DrawPlayerBars(Player player) {
     DrawRectangle(padding, padding + barHeight + padding, (int)(barWidth * ((float)player.mana / player.maxMana)), barHeight, SKYBLUE);
     DrawText("Mana", padding, padding + barHeight + padding - 20, 20, BLACK);
 
-    // Draw level and XP
-    DrawText(TextFormat("Level: %d", player.level), padding, padding + 2 * (barHeight + padding), 20, BLACK);
-    DrawText(TextFormat("XP: %d/%d", player.xp, player.xpToNextLevel), padding, padding + 3 * (barHeight + padding), 20, BLACK);
+    // Draw level progress bar
+    DrawRectangle(padding, padding + 2 * (barHeight + padding), barWidth, barHeight, GRAY);  // Background
+    DrawRectangle(padding, padding + 2 * (barHeight + padding), (int)(barWidth * ((float)player.xp / player.xpToNextLevel)), barHeight, PURPLE);  // Progress
+    DrawText("Level Progress", padding, padding + 2 * (barHeight + padding) - 20, 20, BLACK);
+
+    // Draw level and XP text
+    DrawText(TextFormat("Level: %d", player.level), padding, padding + 3 * (barHeight + padding), 20, BLACK);
+    DrawText(TextFormat("XP: %d/%d", player.xp, player.xpToNextLevel), padding, padding + 4 * (barHeight + padding), 20, BLACK);
 }
 
 // Reduce player health
