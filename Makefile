@@ -4,6 +4,9 @@ CC = gcc
 # Source files
 SRC = src/main.c src/projectile.c src/enemy.c
 
+# Object files
+OBJ = $(SRC:.c=.o)
+
 # Output executable
 TARGET = game
 
@@ -14,9 +17,13 @@ LDFLAGS = -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib -framework OpenGL -fram
 # Build target
 all: $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CC) $(SRC) -o $(TARGET) $(CFLAGS) $(LDFLAGS)
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) -o $(TARGET) $(LDFLAGS)
+
+# Compile each source file into an object file
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 # Clean target
 clean:
-	rm -f $(TARGET)
+	rm -f $(TARGET) $(OBJ)
