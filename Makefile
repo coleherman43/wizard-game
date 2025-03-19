@@ -2,7 +2,7 @@
 CC = gcc
 
 # Source files
-SRC = src/main.c src/projectile.c src/enemy.c
+SRC = src/main.c src/projectile.c src/enemy.c src/player.c
 
 # Object files
 OBJ = $(SRC:.c=.o)

@@ -23,7 +23,7 @@ void SpawnEnemy(Vector2 position, int type) {
             // Set properties based on type
             switch (type) {
                 case 0:  // Basic enemy
-                    enemies[i].speed = 2.0f;
+                    enemies[i].speed = 0.2f;
                     enemies[i].health = 3;
                     enemies[i].color = RED;
                     break;

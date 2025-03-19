@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include "game.h"
 #include "enemy.h"
+#include "player.h"
 
 #define GRID_WIDTH 16
 #define GRID_HEIGHT 12
 #define TILE_SIZE 50
 
 Vector2 mostRecentDirection = {1, 0};  // Default to right
+int playerHealth = 100;  // Player starts with 100 health
+int playerMana = 100;    // Player starts with 100 mana
 
 // Wall grid (1 = wall, 0 = empty)
 int wallGrid[GRID_HEIGHT][GRID_WIDTH] = {
@@ -75,12 +78,15 @@ int main() {
     // Initialize projectiles
     InitializeEnemies();
     InitializeProjectiles();
+    // Initialize Player
+    Player player;
+    InitializePlayer(&player);
     
 
     // Player position and size
     Vector2 playerPosition = {100, 100};
     float playerSpeed = 5.0f;
-    SpawnEnemy((Vector2){150, 150}, 0);  // Basic enemy
+    SpawnEnemy((Vector2){250, 250}, 0);  // Basic enemy
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -88,6 +94,8 @@ int main() {
         Vector2 newPosition = playerPosition;
 
         Vector2 direction = {0, 0};  // Combined direction vector
+
+        
 
         if (IsKeyDown(KEY_RIGHT)) direction.x += 1;
         if (IsKeyDown(KEY_LEFT)) direction.x -= 1;
@@ -99,6 +107,26 @@ int main() {
         if (length > 0) {
             direction.x /= length;
             direction.y /= length;
+        }
+
+        // Check for player-enemy collisions
+        for (int i = 0; i < MAX_ENEMIES; i++) {
+            if (enemies[i].active) {
+                bool collision = CheckEnemyCollision(enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
+                if (collision) {
+                    TakeDamage(&player, 10);
+                    enemies[i].active = false;
+                }
+            }
+        }
+
+        // Regenerate mana over time
+        static float manaRegenTimer = 0.0f;
+        manaRegenTimer += GetFrameTime();
+        if (manaRegenTimer >= 1.0f) {
+            player.mana += 1;
+            if (player.mana > player.maxMana) player.mana = player.maxMana;
+            manaRegenTimer = 0.0f;
         }
 
         // Update the player's position
@@ -144,9 +172,10 @@ int main() {
             float scale = (float)TILE_SIZE / playerTexture.width;  // Scale to fit grid
             DrawTextureEx(playerTexture, playerPosition, 0.0f, scale, WHITE);
 
-            // Draw projectiles
-            DrawProjectiles();
+            
+            DrawProjectiles(); // Draw projectiles
             DrawEnemies();
+            DrawPlayerBars(player);  // Draw health, mana, score, level, and XP
         EndDrawing();
     }
 
