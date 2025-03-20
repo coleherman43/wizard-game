@@ -120,14 +120,19 @@ void UpdatePlayer(Vector2 *playerPosition, Vector2 direction, float playerSpeed,
 void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].active) {
-            bool collision = CheckEnemyCollision(enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
-            if (collision) {
+
+            // Guard to prevent dead enemies from interacting
+            if (enemies[i].health <= 0) continue;
+
+            // Check for collision with player
+            bool playerCollision = CheckEnemyCollision(&enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
+            if (playerCollision) {
                 TakeDamage(player, 10);
                 enemies[i].active = false;
+                printf("Player collided with enemy %d! Player took 10 damage.\n", i);
             }
 
-            // Check if enemy is defeated by a projectile
-            // In UpdateEnemiesAndCheckCollisions:
+            // Check for collision with projectiles
             for (int j = 0; j < MAX_PROJECTILES; j++) {
                 if (projectiles[j].active) {
                     // Get projectile collision size based on type
@@ -139,22 +144,32 @@ void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
                         default: width = 10; height = 10; break;
                     }
 
-                    bool collision = CheckEnemyCollision(enemies[i], projectiles[j].position, width, height);
+                    // Check for collision
+                    bool collision = CheckEnemyCollision(&enemies[i], projectiles[j].position, width, height);
+
+                    // Debug output
                     printf("Enemy %d at (%.1f, %.1f) | Projectile %d at (%.1f, %.1f) | Collision: %d\n",
-                    i, enemies[i].position.x, enemies[i].position.y,
-                    j, projectiles[j].position.x, projectiles[j].position.y,
-                    collision);
+                           i, enemies[i].position.x, enemies[i].position.y,
+                           j, projectiles[j].position.x, projectiles[j].position.y,
+                           collision);
+                    printf("Enemy Rect: (%.1f, %.1f, %d, %d) | Projectile Rect: (%.1f, %.1f, %d, %d)\n",
+                           enemies[i].position.x - 10, enemies[i].position.y - 10, 20, 20,
+                           projectiles[j].position.x, projectiles[j].position.y, width, height);
+
+                    // Handle collision
                     if (collision) {
                         enemies[i].active = false;
                         projectiles[j].active = false;
                         player->xp += 10;  // Award XP
-                        printf("Enemy %d defeated! Gained 10 XP. Current XP: %d/%d\n", i, player->xp, player->xpToNextLevel);  // Debug output
+                        printf("Enemy %d defeated! Gained 10 XP. Current XP: %d/%d\n", i, player->xp, player->xpToNextLevel);
                         break;  // Exit the loop after handling the collision
                     }
                 }
             }
         }
     }
+
+    // Update enemy positions
     UpdateEnemies(playerPosition);
 }
 
