@@ -56,7 +56,7 @@ void UpdateProjectiles() {
             
             // Check for collision with enemis
             for (int j = 0; j < MAX_ENEMIES; j++) {
-                if (enemies[j].active && CheckEnemyCollision(enemies[j], projectiles[i].position, 10, 10)) {
+                if (enemies[j].active && CheckEnemyCollision(&enemies[j], projectiles[i].position, 10, 10)) {
                     enemies[j].health--;  // Reduce enemy health
                     projectiles[i].active = false;  // Deactivate projectile
                     break;

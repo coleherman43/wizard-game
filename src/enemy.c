@@ -1,83 +1,52 @@
-#include "enemy.h"
+// #include "enemy.h"
 #include "game.h"  // For shared variables like wallGrid
 #include <math.h>
 #include "config.h"
+#include "raymath.h"
+#include "enemy.h"
 
-// Define the enemies array
+
 Enemy enemies[MAX_ENEMIES];
 
-// Initialize all enemies as inactive
-void InitializeEnemies() {
+void InitializeEnemies(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         enemies[i].active = false;
     }
 }
 
-// Spawn a new enemy at a given position and type
-void SpawnEnemy(Vector2 position, int type) {
+void SpawnEnemy(Vector2 position, EnemyType type) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (!enemies[i].active) {
             enemies[i].position = position;
             enemies[i].type = type;
+            enemies[i].health = (type == ENEMY_TYPE_BASIC) ? 3 :
+                                (type == ENEMY_TYPE_FAST) ? 2 : 5;
+            enemies[i].speed = (type == ENEMY_TYPE_BASIC) ? 0.5f :
+                               (type == ENEMY_TYPE_FAST) ? 4.0f : 1.5f;
+            enemies[i].color = (type == ENEMY_TYPE_BASIC) ? RED :
+                               (type == ENEMY_TYPE_FAST) ? BLUE : GREEN;
             enemies[i].active = true;
 
-            // Set properties based on type
-            switch (type) {
-                case 0:  // Basic enemy
-                    enemies[i].speed = ENEMY_BASIC_SPEED;
-                    enemies[i].health = ENEMY_BASIC_HEALTH;
-                    enemies[i].color = RED;
-                    break;
-                case 1:  // Fast enemy
-                    enemies[i].speed = 4.0f;
-                    enemies[i].health = 1;
-                    enemies[i].color = GREEN;
-                    break;
-                case 2:  // Tank enemy
-                    enemies[i].speed = 1.0f;
-                    enemies[i].health = 10;
-                    enemies[i].color = BLUE;
-                    break;
-                default:
-                    enemies[i].speed = 2.0f;
-                    enemies[i].health = 3;
-                    enemies[i].color = WHITE;
-                    break;
-            }
-            break;  // Exit after spawning one enemy
+            // Decrement enemiesRemaining
+            waveManager.enemiesRemaining--;
+            break;
         }
     }
 }
 
-// Update all active enemies
 void UpdateEnemies(Vector2 playerPosition) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].active) {
-            // Move towards the player
-            Vector2 direction = {
-                playerPosition.x - enemies[i].position.x,
-                playerPosition.y - enemies[i].position.y
-            };
+            // Calculate direction toward the player
+            Vector2 direction = Vector2Subtract(playerPosition, enemies[i].position);
+            direction = Vector2Normalize(direction);
+            enemies[i].direction = direction;
 
-            // Normalize the direction vector
-            float length = sqrt(direction.x * direction.x + direction.y * direction.y);
-            if (length > 0) {
-                direction.x /= length;
-                direction.y /= length;
-            }
+            // Move the enemy
+            Vector2 velocity = Vector2Scale(enemies[i].direction, enemies[i].speed);
+            enemies[i].position = Vector2Add(enemies[i].position, velocity);
 
-            // Update position
-            enemies[i].position.x += direction.x * enemies[i].speed;
-            enemies[i].position.y += direction.y * enemies[i].speed;
-
-            // Check for collisions with walls
-            if (CheckCollision(wallGrid, enemies[i].position, TILE_SIZE, TILE_SIZE, TILE_SIZE)) {
-                // Reverse direction if colliding with a wall
-                enemies[i].position.x -= direction.x * enemies[i].speed;
-                enemies[i].position.y -= direction.y * enemies[i].speed;
-            }
-
-            // Deactivate if health reaches 0
+            // Check for death
             if (enemies[i].health <= 0) {
                 enemies[i].active = false;
             }
@@ -85,18 +54,100 @@ void UpdateEnemies(Vector2 playerPosition) {
     }
 }
 
-// Draw all active enemies
-void DrawEnemies() {
+void DrawEnemies(void) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].active) {
-            DrawRectangleV(enemies[i].position, (Vector2){TILE_SIZE, TILE_SIZE}, enemies[i].color);
+            // Draw a square instead of a circle
+            DrawRectangle(
+                enemies[i].position.x - 10,  // Center X (20x20 square)
+                enemies[i].position.y - 10,  // Center Y
+                20,  // Width
+                20,  // Height
+                enemies[i].color
+            );
         }
     }
 }
 
-// Check collision between an enemy and a rectangle
-bool CheckEnemyCollision(Enemy enemy, Vector2 position, int width, int height) {
-    Rectangle enemyRect = {enemy.position.x, enemy.position.y, TILE_SIZE, TILE_SIZE};
-    Rectangle projectileRect = {position.x, position.y, (float)width, (float)height};
+bool CheckEnemyCollision(const Enemy *enemy, Vector2 position, int width, int height) {
+    // Enemy collision rectangle (centered)
+    Rectangle enemyRect = {
+        enemy->position.x - 10,  // Center X
+        enemy->position.y - 10,  // Center Y
+        20, 20
+    };
+
+    // Projectile collision rectangle (centered)
+    Rectangle projectileRect = {
+        position.x - width/2,  // Center X
+        position.y - height/2, // Center Y
+        width,
+        height
+    };
+
     return CheckCollisionRecs(enemyRect, projectileRect);
+}
+
+// enemy.c
+WaveManager waveManager = {0};
+
+void StartNewWave(WaveManager* manager, Vector2 playerPosition) {
+    manager->currentWave++;
+    manager->waveActive = true;
+    
+    // Calculate number of enemies
+    int baseEnemies = BASE_ENEMIES_PER_WAVE * pow(WAVE_SCALE_FACTOR, manager->currentWave);
+    manager->enemiesRemaining = baseEnemies;
+
+    // Determine enemy types based on wave
+    for (int i = 0; i < baseEnemies; i++) {
+        EnemyType type = ENEMY_TYPE_BASIC;
+        
+        if (manager->currentWave >= 3 && GetRandomValue(0, 100) < 30) {
+            type = ENEMY_TYPE_FAST;
+        }
+        if (manager->currentWave >= 5 && GetRandomValue(0, 100) < 15) {
+            type = ENEMY_TYPE_TANK;
+        }
+
+        // Find spawn position away from player
+        Vector2 spawnPos;
+        do {
+            spawnPos = (Vector2){
+                playerPosition.x + GetRandomValue(-SPAWN_RADIUS, SPAWN_RADIUS),
+                playerPosition.y + GetRandomValue(-SPAWN_RADIUS, SPAWN_RADIUS)
+            };
+        } while (Vector2Distance(spawnPos, playerPosition) < SPAWN_RADIUS/2);
+
+        SpawnEnemy(spawnPos, type);
+    }
+}
+
+void UpdateWaveSystem(WaveManager* manager, Vector2 playerPosition) {
+    if (!manager->waveActive) {
+        // Countdown to next wave
+        manager->waveTimer -= GetFrameTime();
+        if (manager->waveTimer <= 0) {
+            StartNewWave(manager, playerPosition);
+            printf("Starting wave %d\n", manager->currentWave);
+        }
+        return;
+    }
+
+    // Count active enemies
+    int activeEnemies = 0;
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].active) activeEnemies++;
+    }
+
+    // Debug output
+    printf("Wave %d: %d enemies remaining\n", manager->currentWave, activeEnemies);
+
+    // Check if wave is complete
+    if (activeEnemies == 0 && manager->enemiesRemaining <= 0) {
+        manager->waveActive = false;
+        manager->waveTimer = WAVE_COOLDOWN;
+        printf("Wave %d complete! Next wave in %.1f seconds\n", 
+              manager->currentWave, WAVE_COOLDOWN);
+    }
 }

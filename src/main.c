@@ -13,14 +13,14 @@ Vector2 mostRecentDirection = {1, 0};  // Default to right
 int wallGrid[GRID_HEIGHT][GRID_WIDTH] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
@@ -120,14 +120,19 @@ void UpdatePlayer(Vector2 *playerPosition, Vector2 direction, float playerSpeed,
 void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].active) {
-            bool collision = CheckEnemyCollision(enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
-            if (collision) {
+
+            // Guard to prevent dead enemies from interacting
+            if (enemies[i].health <= 0) continue;
+
+            // Check for collision with player
+            bool playerCollision = CheckEnemyCollision(&enemies[i], playerPosition, TILE_SIZE, TILE_SIZE);
+            if (playerCollision) {
                 TakeDamage(player, 10);
                 enemies[i].active = false;
+                printf("Player collided with enemy %d! Player took 10 damage.\n", i);
             }
 
-            // Check if enemy is defeated by a projectile
-            // In UpdateEnemiesAndCheckCollisions:
+            // Check for collision with projectiles
             for (int j = 0; j < MAX_PROJECTILES; j++) {
                 if (projectiles[j].active) {
                     // Get projectile collision size based on type
@@ -139,22 +144,32 @@ void UpdateEnemiesAndCheckCollisions(Vector2 playerPosition, Player *player) {
                         default: width = 10; height = 10; break;
                     }
 
-                    bool collision = CheckEnemyCollision(enemies[i], projectiles[j].position, width, height);
+                    // Check for collision
+                    bool collision = CheckEnemyCollision(&enemies[i], projectiles[j].position, width, height);
+
+                    // Debug output
                     printf("Enemy %d at (%.1f, %.1f) | Projectile %d at (%.1f, %.1f) | Collision: %d\n",
-                    i, enemies[i].position.x, enemies[i].position.y,
-                    j, projectiles[j].position.x, projectiles[j].position.y,
-                    collision);
+                           i, enemies[i].position.x, enemies[i].position.y,
+                           j, projectiles[j].position.x, projectiles[j].position.y,
+                           collision);
+                    printf("Enemy Rect: (%.1f, %.1f, %d, %d) | Projectile Rect: (%.1f, %.1f, %d, %d)\n",
+                           enemies[i].position.x - 10, enemies[i].position.y - 10, 20, 20,
+                           projectiles[j].position.x, projectiles[j].position.y, width, height);
+
+                    // Handle collision
                     if (collision) {
                         enemies[i].active = false;
                         projectiles[j].active = false;
                         player->xp += 10;  // Award XP
-                        printf("Enemy %d defeated! Gained 10 XP. Current XP: %d/%d\n", i, player->xp, player->xpToNextLevel);  // Debug output
+                        printf("Enemy %d defeated! Gained 10 XP. Current XP: %d/%d\n", i, player->xp, player->xpToNextLevel);
                         break;  // Exit the loop after handling the collision
                     }
                 }
             }
         }
     }
+
+    // Update enemy positions
     UpdateEnemies(playerPosition);
 }
 
@@ -184,6 +199,19 @@ void DrawGame(Texture2D playerTexture, Vector2 playerPosition, Player player) {
     EndDrawing();
 }
 
+void DrawWaveInfo(WaveManager manager) {
+    if (!manager.waveActive) {
+        char waveText[50];
+        snprintf(waveText, sizeof(waveText), "Next wave in: %.1f", manager.waveTimer);
+        DrawText(waveText, 10, 50, 20, DARKGRAY);
+    }
+    
+    char waveNumber[30];
+    snprintf(waveNumber, sizeof(waveNumber), "Wave: %d", manager.currentWave);
+    DrawText(waveNumber, 10, 10, 20, DARKGRAY);
+}
+
+// main.c
 int main() {
     // Initialize the window
     InitWindow(800, 600, "Wizard Game");
@@ -203,12 +231,12 @@ int main() {
     Player player;
     InitializePlayer(&player);
 
-    // Spawn an enemy
-    SpawnEnemy((Vector2){250, 250}, 0);
-
     // Player position and speed
     Vector2 playerPosition = {100, 100};
     float playerSpeed = 5.0f;
+
+    // Initialize wave system
+    StartNewWave(&waveManager, playerPosition); // Start first wave
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -225,6 +253,17 @@ int main() {
 
         // Update projectiles
         UpdateProjectilesAndHandleShooting(playerPosition, &player);
+
+        // Update wave system
+        UpdateWaveSystem(&waveManager, playerPosition);
+
+        // Update enemies and check collisions
+        if (waveManager.waveActive) {
+            UpdateEnemiesAndCheckCollisions(playerPosition, &player);
+        }
+
+        // Draw wave info
+        DrawWaveInfo(waveManager);
 
         // Draw the game
         DrawGame(playerTexture, playerPosition, player);
