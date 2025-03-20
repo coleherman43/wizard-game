@@ -199,7 +199,6 @@ void DrawGame(Texture2D playerTexture, Vector2 playerPosition, Player player) {
     EndDrawing();
 }
 
-// main.c
 void DrawWaveInfo(WaveManager manager) {
     if (!manager.waveActive) {
         char waveText[50];
@@ -212,6 +211,7 @@ void DrawWaveInfo(WaveManager manager) {
     DrawText(waveNumber, 10, 10, 20, DARKGRAY);
 }
 
+// main.c
 int main() {
     // Initialize the window
     InitWindow(800, 600, "Wizard Game");

@@ -26,6 +26,9 @@ void SpawnEnemy(Vector2 position, EnemyType type) {
             enemies[i].color = (type == ENEMY_TYPE_BASIC) ? RED :
                                (type == ENEMY_TYPE_FAST) ? BLUE : GREEN;
             enemies[i].active = true;
+
+            // Decrement enemiesRemaining
+            waveManager.enemiesRemaining--;
             break;
         }
     }
@@ -122,19 +125,25 @@ void StartNewWave(WaveManager* manager, Vector2 playerPosition) {
 
 void UpdateWaveSystem(WaveManager* manager, Vector2 playerPosition) {
     if (!manager->waveActive) {
+        // Countdown to next wave
         manager->waveTimer -= GetFrameTime();
         if (manager->waveTimer <= 0) {
             StartNewWave(manager, playerPosition);
+            printf("Starting wave %d\n", manager->currentWave);
         }
         return;
     }
 
-    // Check if wave is complete
+    // Count active enemies
     int activeEnemies = 0;
     for (int i = 0; i < MAX_ENEMIES; i++) {
         if (enemies[i].active) activeEnemies++;
     }
 
+    // Debug output
+    printf("Wave %d: %d enemies remaining\n", manager->currentWave, activeEnemies);
+
+    // Check if wave is complete
     if (activeEnemies == 0 && manager->enemiesRemaining <= 0) {
         manager->waveActive = false;
         manager->waveTimer = WAVE_COOLDOWN;
