@@ -199,6 +199,19 @@ void DrawGame(Texture2D playerTexture, Vector2 playerPosition, Player player) {
     EndDrawing();
 }
 
+// main.c
+void DrawWaveInfo(WaveManager manager) {
+    if (!manager.waveActive) {
+        char waveText[50];
+        snprintf(waveText, sizeof(waveText), "Next wave in: %.1f", manager.waveTimer);
+        DrawText(waveText, 10, 50, 20, DARKGRAY);
+    }
+    
+    char waveNumber[30];
+    snprintf(waveNumber, sizeof(waveNumber), "Wave: %d", manager.currentWave);
+    DrawText(waveNumber, 10, 10, 20, DARKGRAY);
+}
+
 int main() {
     // Initialize the window
     InitWindow(800, 600, "Wizard Game");
@@ -218,12 +231,12 @@ int main() {
     Player player;
     InitializePlayer(&player);
 
-    // Spawn an enemy
-    SpawnEnemy((Vector2){250, 250}, 0);
-
     // Player position and speed
     Vector2 playerPosition = {100, 100};
     float playerSpeed = 5.0f;
+
+    // Initialize wave system
+    StartNewWave(&waveManager, playerPosition); // Start first wave
 
     // Main game loop
     while (!WindowShouldClose()) {
@@ -240,6 +253,17 @@ int main() {
 
         // Update projectiles
         UpdateProjectilesAndHandleShooting(playerPosition, &player);
+
+        // Update wave system
+        UpdateWaveSystem(&waveManager, playerPosition);
+
+        // Update enemies and check collisions
+        if (waveManager.waveActive) {
+            UpdateEnemiesAndCheckCollisions(playerPosition, &player);
+        }
+
+        // Draw wave info
+        DrawWaveInfo(waveManager);
 
         // Draw the game
         DrawGame(playerTexture, playerPosition, player);

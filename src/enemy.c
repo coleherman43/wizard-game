@@ -84,3 +84,61 @@ bool CheckEnemyCollision(const Enemy *enemy, Vector2 position, int width, int he
 
     return CheckCollisionRecs(enemyRect, projectileRect);
 }
+
+// enemy.c
+WaveManager waveManager = {0};
+
+void StartNewWave(WaveManager* manager, Vector2 playerPosition) {
+    manager->currentWave++;
+    manager->waveActive = true;
+    
+    // Calculate number of enemies
+    int baseEnemies = BASE_ENEMIES_PER_WAVE * pow(WAVE_SCALE_FACTOR, manager->currentWave);
+    manager->enemiesRemaining = baseEnemies;
+
+    // Determine enemy types based on wave
+    for (int i = 0; i < baseEnemies; i++) {
+        EnemyType type = ENEMY_TYPE_BASIC;
+        
+        if (manager->currentWave >= 3 && GetRandomValue(0, 100) < 30) {
+            type = ENEMY_TYPE_FAST;
+        }
+        if (manager->currentWave >= 5 && GetRandomValue(0, 100) < 15) {
+            type = ENEMY_TYPE_TANK;
+        }
+
+        // Find spawn position away from player
+        Vector2 spawnPos;
+        do {
+            spawnPos = (Vector2){
+                playerPosition.x + GetRandomValue(-SPAWN_RADIUS, SPAWN_RADIUS),
+                playerPosition.y + GetRandomValue(-SPAWN_RADIUS, SPAWN_RADIUS)
+            };
+        } while (Vector2Distance(spawnPos, playerPosition) < SPAWN_RADIUS/2);
+
+        SpawnEnemy(spawnPos, type);
+    }
+}
+
+void UpdateWaveSystem(WaveManager* manager, Vector2 playerPosition) {
+    if (!manager->waveActive) {
+        manager->waveTimer -= GetFrameTime();
+        if (manager->waveTimer <= 0) {
+            StartNewWave(manager, playerPosition);
+        }
+        return;
+    }
+
+    // Check if wave is complete
+    int activeEnemies = 0;
+    for (int i = 0; i < MAX_ENEMIES; i++) {
+        if (enemies[i].active) activeEnemies++;
+    }
+
+    if (activeEnemies == 0 && manager->enemiesRemaining <= 0) {
+        manager->waveActive = false;
+        manager->waveTimer = WAVE_COOLDOWN;
+        printf("Wave %d complete! Next wave in %.1f seconds\n", 
+              manager->currentWave, WAVE_COOLDOWN);
+    }
+}

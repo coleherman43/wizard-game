@@ -17,8 +17,6 @@
 // Enemy stats
 // Enemy configuration
 #define MAX_ENEMIES 100               // Max simultaneous enemies
-#define INITIAL_WAVE_SIZE 1           // Enemies in first wave
-#define WAVE_GROWTH_RATE 2            // e.g., 2x enemies per wave
 #define ENEMY_BASE_HEALTH 3           // Base stats for enemy types
 #define ENEMY_BASE_SPEED 0.5f
 #define ENEMY_BASE_XP 10
@@ -28,5 +26,12 @@
 #define MANA_COST_FIREBALL 10
 #define MANA_COST_LIGHTNING 20
 #define MANA_COST_ICE 15
+
+// Wave system
+#define STARTING_WAVE 1
+#define BASE_ENEMIES_PER_WAVE 5
+#define WAVE_SCALE_FACTOR 1.2    // 20% more enemies per wave
+#define SPAWN_RADIUS 150.0f      // Spawn enemies at least this far from player
+#define WAVE_COOLDOWN 3.0f       // Seconds between waves
 
 #endif
